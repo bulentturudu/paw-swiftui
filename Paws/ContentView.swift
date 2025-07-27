@@ -8,35 +8,42 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - [+] BEGIN: ContentView ------------------------->
+// Ana ekran: Evcil hayvanların listelenmesi ve düzenlenmesi için grid yapısı içerir
 struct ContentView: View {
+    // MARK: - [+] BEGIN: State & Environment Değişkenleri ------------------------->
     @Environment(\.modelContext) var modelContext
     @Query private var pets: [Pet]
 
     @State private var path = [Pet]()
     @State private var isEditing: Bool = false
+    //-- [-] END: State & Environment Değişkenleri -------------------------
 
     let layout = [
         GridItem(.flexible(minimum: 120)),
         GridItem(.flexible(minimum: 120))
     ]
 
+    // MARK: - [+] BEGIN: Fonksiyonlar ------------------------->
+    // Yeni pet ekleme işlemi
     func addPet () {
         isEditing = false
         let pet = Pet(name: "Best Friend")
         modelContext.insert(pet)
         path = []
     }
-
-
+    //-- [-] END: Fonksiyonlar ------------------------->
+    
+    // MARK: - [+] BEGIN: Body ------------------------->
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView {
-                LazyVGrid(columns: layout) {
-                    GridRow {
+            ScrollView { // Ana kaydırma alanı
+                LazyVGrid(columns: layout) { // Grid yapısı (2 sütun)
+                    GridRow { // Grid satırı, tüm pet kartlarını içerir
                         ForEach(pets) { pet in
                             NavigationLink(value: pet) {
                                 VStack {
-                                    if let imagedata = pet.photo {
+                                    if let imagedata = pet.photo { // Pet için fotoğraf varsa göster
                                         if let image = UIImage(data: imagedata) {
                                             Image(uiImage: image)
                                                 .resizable()
@@ -44,7 +51,7 @@ struct ContentView: View {
                                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .circular))
 
                                         }
-                                    } else {
+                                    } else { // Fotoğraf yoksa varsayılan ikon
                                         Image(systemName: "pawprint.circle")
                                             .resizable()
                                             .scaledToFit()
@@ -63,8 +70,8 @@ struct ContentView: View {
                                 .background(.ultraThinMaterial)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .circular))
                                 .overlay(alignment: .topTrailing) {
-                                    if isEditing {
-                                        Menu {
+                                    if isEditing { // Düzenleme modundaysak silme menüsünü göster
+                                        Menu { // Silme işlemi menü butonu
                                             Button("Delete", systemImage: "trash", role: .destructive){
                                                 withAnimation {
                                                     modelContext.delete(pet)
@@ -92,6 +99,7 @@ struct ContentView: View {
             }//:SCROLLVIEW
             .navigationTitle(pets.isEmpty ? "" : "Paws")
             .navigationDestination(for: Pet.self, destination: EditPetView.init)
+            // MARK: - [+] BEGIN: Toolbar ------------------------->
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -108,6 +116,8 @@ struct ContentView: View {
                     Button("Add a New Pet", systemImage: "plus.circle", action: addPet)
                 }
             }
+            //-- [-] END: Toolbar ------------------------->
+            // MARK: - [+] BEGIN: Boş Ekran Görünümü ------------------------->
             .overlay {
                 if pets.isEmpty {
                     CustomContentUnavaibleView(
@@ -117,9 +127,12 @@ struct ContentView: View {
 
                 }
             }
+            //-- [-] END: Boş Ekran Görünümü ------------------------->
         }//: NAVSTACK
     }
+    //-- [-] END: Body ------------------------->
 }
+//-- [-] END: ContentView ------------------------->
 
 #Preview("Sample Data") {
     ContentView()
